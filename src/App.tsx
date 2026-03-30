@@ -1,18 +1,18 @@
 import { Box, Typography } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./index.css";
 import RoomPage, { type RoomData } from "./RoomPage";
 import Salon from "./Salon";
+import Explore from "./Explore";
+import Shelf from "./Shelf";
+import Profile from "./Profile";
 
 // Nav icons
 import catLogo1 from "./assets/cat-logo-1.svg";
 import catLogo2 from "./assets/cat-logo-2.svg";
-import imgIcon from "./assets/nav-rooms.svg";
-import imgIcon1 from "./assets/nav-discover.svg";
-import imgIcon2 from "./assets/nav-library.svg";
-import imgIcon3 from "./assets/nav-profile.svg";
+import { RoomsIcon, DiscoverIcon, LibraryIcon, ProfileIcon } from "./NavIcons";
 
 // Book covers
 import coverSilentPatient   from "./assets/the-silent-patient.jpg";
@@ -185,10 +185,10 @@ const MIXED_ROOMS = (() => {
 const TOTAL_LISTENERS = ROOMS.reduce((sum, r) => sum + parseInt(r.listeners), 0);
 
 const NAV_ITEMS = [
-  { label: "Rooms", icon: imgIcon, active: true },
-  { label: "Discover", icon: imgIcon1, active: false },
-  { label: "Library", icon: imgIcon2, active: false },
-  { label: "Profile", icon: imgIcon3, active: false },
+  { label: "Rooms",   Icon: RoomsIcon,    key: "rooms"   },
+  { label: "Explore", Icon: DiscoverIcon, key: "discover"},
+  { label: "Shelf",   Icon: LibraryIcon,  key: "shelf"   },
+  { label: "Profile", Icon: ProfileIcon,  key: "profile" },
 ];
 
 const theme = createTheme({
@@ -196,16 +196,90 @@ const theme = createTheme({
   typography: { fontFamily: "'Plus Jakarta Sans', sans-serif" },
 });
 
+function SkeletonCard() {
+  return (
+    <Box
+      sx={{
+        height: 114,
+        borderRadius: "16px",
+        flexShrink: 0,
+        overflow: "hidden",
+        "@keyframes shimmer": {
+          "0%":   { backgroundPosition: "-600px 0" },
+          "100%": { backgroundPosition: "600px 0" },
+        },
+        background: "linear-gradient(90deg, #e0e0e0 25%, #eeeeee 50%, #e0e0e0 75%)",
+        backgroundSize: "1200px 100%",
+        animation: "shimmer 1.5s ease-in-out infinite",
+      }}
+    />
+  );
+}
+
 export default function App() {
   const [active, setActive] = useState("All");
   const [showSalon, setShowSalon] = useState(false);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
+  const [activeNav, setActiveNav] = useState("rooms");
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+  const lastScrollRef = useRef(0);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Simulate content load
+  useEffect(() => {
+    const t = setTimeout(() => setLoaded(true), 900);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Reset visible cards when filter changes
+  useEffect(() => {
+    setVisibleKeys(new Set());
+  }, [active]);
+
+  // IntersectionObserver — stagger cards as they enter view
+  useEffect(() => {
+    if (!loaded) return;
+    const id = setTimeout(() => {
+      observerRef.current?.disconnect();
+      const root = cardsRef.current;
+      if (!root) return;
+      const obs = new IntersectionObserver(
+        (entries) => {
+          let delay = 0;
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const key = entry.target.getAttribute("data-card-key");
+              if (key) {
+                const k = key;
+                setTimeout(() => setVisibleKeys((prev) => new Set([...prev, k])), delay);
+                delay += 70;
+              }
+              obs.unobserve(entry.target);
+            }
+          });
+        },
+        { root, threshold: 0.05 }
+      );
+      root.querySelectorAll("[data-card-key]").forEach((el) => obs.observe(el));
+      observerRef.current = obs;
+    }, 50);
+    return () => clearTimeout(id);
+  }, [loaded, active]);
 
   const pillsRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ dragging: false, startX: 0, scrollLeft: 0 });
 
   const cardsRef = useRef<HTMLDivElement>(null);
   const cardsDrag = useRef({ dragging: false, startY: 0, scrollTop: 0 });
+
+  const onCardsScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const curr = e.currentTarget.scrollTop;
+    if (curr > lastScrollRef.current && curr > 40) setHeaderCollapsed(true);
+    else if (curr < lastScrollRef.current) setHeaderCollapsed(false);
+    lastScrollRef.current = curr;
+  };
 
   const onCardsMouseDown = (e: React.MouseEvent) => {
     const el = cardsRef.current;
@@ -261,16 +335,54 @@ export default function App() {
 
       {currentRoom && !showSalon && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
-          <RoomPage room={currentRoom} onBack={() => { setCurrentRoom(null); setShowSalon(false); }} onEnterSalon={() => setShowSalon(true)} />
+          <RoomPage room={currentRoom} onBack={() => { setCurrentRoom(null); setShowSalon(false); }} onEnterSalon={() => setShowSalon(true)} onNavigate={(tab) => { setCurrentRoom(null); setShowSalon(false); setActiveNav(tab); }} />
         </Box>
       )}
 
-      <Box sx={{ display: currentRoom ? "none" : "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+      {!currentRoom && activeNav === "discover" && (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+          <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
+            <Explore
+              rooms={ROOMS}
+              onRoomSelect={(room) => { setCurrentRoom(room); }}
+              onNavigate={(tab) => setActiveNav(tab)}
+            />
+          </Box>
+        </Box>
+      )}
+
+      {!currentRoom && activeNav === "shelf" && (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+          <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
+            <Shelf
+              rooms={ROOMS}
+              onRoomSelect={(room) => { setCurrentRoom(room); }}
+              onSalonOpen={(room) => { setCurrentRoom(room); setShowSalon(true); }}
+              onNavigate={(tab) => setActiveNav(tab)}
+            />
+          </Box>
+        </Box>
+      )}
+
+      {!currentRoom && activeNav === "profile" && (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+          <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
+            <Profile
+              rooms={ROOMS}
+              onRoomSelect={(room) => { setCurrentRoom(room); }}
+              onSalonOpen={(room) => { setCurrentRoom(room); setShowSalon(true); }}
+              onNavigate={(tab) => setActiveNav(tab)}
+            />
+          </Box>
+        </Box>
+      )}
+
+      <Box sx={{ display: currentRoom || activeNav === "discover" || activeNav === "shelf" || activeNav === "profile" ? "none" : "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
         {/* Mobile frame */}
         <Box
           sx={{
-            width: 393,
-            height: 874,
+            width: { xs: "100%", sm: 393 },
+            height: { xs: "100dvh", sm: 874 },
             position: "relative",
             bgcolor: c.navy,
             borderRadius: { xs: 0, sm: "44px" },
@@ -281,7 +393,7 @@ export default function App() {
           }}
         >
           {/* ── Header ────────────────────────────── */}
-          <Box sx={{ px: "24px", pt: "15px", pb: "0px" }}>
+          <Box sx={{ px: "24px", pt: headerCollapsed ? "10px" : "15px", pb: "0px", transition: "padding 0.3s ease" }}>
             <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: "8px" }}>
 
               {/* Logo: wordmark with animated cat */}
@@ -434,10 +546,14 @@ export default function App() {
             onMouseLeave={stopDrag}
             sx={{
               px: "24px",
-              py: "12px",
+              py: headerCollapsed ? "0px" : "12px",
+              maxHeight: headerCollapsed ? "0px" : "56px",
+              opacity: headerCollapsed ? 0 : 1,
+              overflow: "hidden",
+              transition: "max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease",
               display: "flex",
               gap: "8px",
-              overflowX: "auto",
+              overflowX: headerCollapsed ? "hidden" : "auto",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
               cursor: "grab",
@@ -485,6 +601,7 @@ export default function App() {
           {/* ── White content area ────────────────── */}
           <Box
             ref={cardsRef}
+            onScroll={onCardsScroll}
             onMouseDown={onCardsMouseDown}
             onMouseMove={onCardsMouseMove}
             onMouseUp={stopCardsDrag}
@@ -506,7 +623,7 @@ export default function App() {
             {/* Section header */}
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 24, flexShrink: 0 }}>
               <Typography sx={{ fontFamily: serif, fontWeight: 600, fontSize: 20, lineHeight: "24px", color: c.navy }}>
-                Live Rooms
+                Rooms
               </Typography>
 
               {/* Listener count + throbbing live dot */}
@@ -543,11 +660,15 @@ export default function App() {
 
             {/* Room cards */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: "13px" }}>
-              {filteredRooms.map((room) => {
+              {!loaded
+                ? Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
+                : filteredRooms.map((room) => {
                 const listenerCount = parseInt(room.listeners);
+                const visible = visibleKeys.has(room.title);
                 return (
                   <Box
                     key={room.title}
+                    data-card-key={room.title}
                     onClick={() => setCurrentRoom(room)}
                     sx={{
                       height: 114,
@@ -556,9 +677,11 @@ export default function App() {
                       overflow: "hidden",
                       cursor: "pointer",
                       flexShrink: 0,
-                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      opacity: visible ? 1 : 0,
+                      transform: visible ? "translateY(0)" : "translateY(18px)",
+                      transition: "opacity 0.4s ease, transform 0.4s ease, box-shadow 0.2s ease",
                       "&:hover": {
-                        transform: "scale(1.02)",
+                        transform: visible ? "scale(1.02)" : "translateY(18px)",
                         boxShadow: "0 8px 32px rgba(0,0,0,0.35)",
                       },
                     }}
@@ -639,17 +762,22 @@ export default function App() {
           {/* ── Bottom navigation ─────────────────── */}
           <Box sx={{ bgcolor: c.navy, borderTop: `0.556px solid ${c.navyBorder}`, px: "24px", pt: "16px", pb: "20px" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              {NAV_ITEMS.map((item) => (
-                <Box
-                  key={item.label}
-                  sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}
-                >
-                  <Box component="img" src={item.icon} alt={item.label} sx={{ width: 24, height: 24, display: "block" }} />
-                  <Typography sx={{ fontFamily: sans, fontSize: 12, lineHeight: "16px", color: item.active ? c.pink : c.sage, whiteSpace: "nowrap" }}>
-                    {item.label}
-                  </Typography>
-                </Box>
-              ))}
+              {NAV_ITEMS.map((item) => {
+                const isActive = item.key === "rooms"; // Rooms tab is always active on this screen
+                const color = isActive ? c.pink : c.sage;
+                return (
+                  <Box
+                    key={item.label}
+                    onClick={() => { setActiveNav(item.key); }}
+                    sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}
+                  >
+                    <item.Icon color={color} />
+                    <Typography sx={{ fontFamily: sans, fontSize: 12, lineHeight: "16px", color, whiteSpace: "nowrap" }}>
+                      {item.label}
+                    </Typography>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         </Box>

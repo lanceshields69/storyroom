@@ -1016,6 +1016,15 @@ export default function Salon({ room, onBack }: Props) {
   const [userReactions, setUserReactions] = useState<Record<string, string>>({});
   const [showPassageSheet, setShowPassageSheet] = useState(false);
   const [sharedPosts, setSharedPosts] = useState<SharedPost[]>([]);
+  const [composeText, setComposeText] = useState("");
+  const composeRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const handleComposeChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setComposeText(e.target.value);
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  };
 
   const handleLongPress = useCallback((messageId: string, rect: DOMRect) => {
     if (!salonRef.current) return;
@@ -1239,42 +1248,59 @@ export default function Salon({ room, onBack }: Props) {
 
       {/* ── Compose bar ─────────────────────────────────────────────────── */}
       <Box sx={{
-        flexShrink: 0, bgcolor: c.navy,
-        borderTop: "0.5px solid rgba(238,233,220,0.08)",
-        px: "14px", pt: "10px", pb: "24px",
-        display: showPassageSheet ? "none" : "flex", alignItems: "center", gap: "8px",
+        flexShrink: 0,
+        bgcolor: "#352a8c",
+        borderTop: "1px solid rgba(106,96,191,0.4)",
+        px: "15px", pt: "12px", pb: "20px",
+        display: showPassageSheet ? "none" : "flex", alignItems: "flex-start", gap: "8px",
       }}>
+        {/* Auto-expanding textarea */}
         <Box
-          component="input"
+          component="textarea"
+          ref={composeRef}
           placeholder="Add to the salon..."
+          value={composeText}
+          onChange={handleComposeChange}
+          rows={1}
           sx={{
             flex: 1,
-            bgcolor: "rgba(255,255,255,0.05)",
-            border: "0.5px solid rgba(238,233,220,0.15)",
-            borderRadius: "20px",
-            px: "14px", py: "9px",
-            fontFamily: sans, fontSize: 13, color: c.cream,
+            bgcolor: "#0a005a",
+            border: "1px solid #6a60bf",
+            borderRadius: "16px",
+            minHeight: "33px",
+            px: "14px", py: "7px",
+            fontFamily: sans, fontSize: 14, letterSpacing: "-0.5px",
+            lineHeight: "19px",
+            color: "#e8e6fc",
             outline: "none",
-            "&::placeholder": { color: "rgba(238,233,220,0.30)" },
-            "&:focus": { border: "0.5px solid rgba(238,233,220,0.30)" },
+            resize: "none",
+            overflow: "hidden",
+            boxSizing: "border-box",
+            display: "block",
+            "&::placeholder": { color: "#6a60bf" },
+            "&:focus": { border: "1px solid #9a90df" },
           }}
         />
+        {/* Quote button */}
         <Box
           onClick={e => { e.stopPropagation(); setShowPassageSheet(true); }}
           sx={{
-            width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-            border: "1px solid rgba(226,169,201,0.40)",
+            width: 30, height: 30, borderRadius: "50%", flexShrink: 0, mt: "1px",
+            bgcolor: "rgba(106,96,191,0.35)",
+            border: "1px solid rgba(232,230,252,0.25)",
             display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
           }}
         >
-          <Typography sx={{ fontFamily: sans, fontSize: 16, color: c.pink, lineHeight: 1 }}>❝</Typography>
+          <Typography sx={{ fontFamily: sans, fontSize: 14, color: "#e8e6fc", lineHeight: 1 }}>❝</Typography>
         </Box>
+        {/* Ask button */}
         <Box sx={{
-          width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
-          border: "1px solid rgba(211,232,226,0.40)",
+          width: 30, height: 30, borderRadius: "50%", flexShrink: 0, mt: "1px",
+          bgcolor: "rgba(232,230,252,0.12)",
+          border: "1px solid rgba(232,230,252,0.25)",
           display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
         }}>
-          <Typography sx={{ fontFamily: sans, fontSize: 11, fontWeight: 500, color: c.sage, lineHeight: 1 }}>Ask</Typography>
+          <Typography sx={{ fontFamily: sans, fontSize: 10, fontWeight: 500, color: "#e8e6fc", lineHeight: 1 }}>Ask</Typography>
         </Box>
       </Box>
 

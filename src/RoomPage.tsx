@@ -49,10 +49,7 @@ const IconCheck = () => (
     <path d="M2 5l2.5 2.5L8 3" stroke="#D3E8E2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
-import navRooms from "./assets/nav-rooms.svg";
-import navDiscover from "./assets/nav-discover.svg";
-import navLibrary from "./assets/nav-library.svg";
-import navProfile from "./assets/nav-profile.svg";
+import { RoomsIcon, DiscoverIcon, LibraryIcon, ProfileIcon } from "./NavIcons";
 
 const c = {
   navy: "#0a005a",
@@ -114,9 +111,10 @@ type Props = {
   room: RoomData;
   onBack: () => void;
   onEnterSalon: () => void;
+  onNavigate?: (tab: string) => void;
 };
 
-export default function RoomPage({ room, onBack, onEnterSalon }: Props) {
+export default function RoomPage({ room, onBack, onEnterSalon, onNavigate }: Props) {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -594,23 +592,26 @@ export default function RoomPage({ room, onBack, onEnterSalon }: Props) {
       >
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {[
-            { label: "Rooms", icon: navRooms, active: true },
-            { label: "Discover", icon: navDiscover, active: false },
-            { label: "Library", icon: navLibrary, active: false },
-            { label: "Profile", icon: navProfile, active: false },
-          ].map((item) => (
-            <Box
-              key={item.label}
-              sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}
-            >
-              <Box component="img" src={item.icon} alt={item.label} sx={{ width: 24, height: 24 }} />
-              <Typography
-                sx={{ fontFamily: sans, fontSize: 12, lineHeight: "16px", color: item.active ? c.pink : c.sage, whiteSpace: "nowrap" }}
+            { label: "Rooms",   Icon: RoomsIcon,    key: "rooms"   },
+            { label: "Explore", Icon: DiscoverIcon, key: "discover"},
+            { label: "Shelf",   Icon: LibraryIcon,  key: "shelf"   },
+            { label: "Profile", Icon: ProfileIcon,  key: "profile" },
+          ].map((item) => {
+            const isActive = item.key === "rooms";
+            const color = isActive ? c.pink : c.sage;
+            return (
+              <Box
+                key={item.key}
+                onClick={() => { if (item.key === "rooms") { onBack(); } else { onBack(); onNavigate?.(item.key); } }}
+                sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}
               >
-                {item.label}
-              </Typography>
-            </Box>
-          ))}
+                <item.Icon color={color} />
+                <Typography sx={{ fontFamily: sans, fontSize: 12, lineHeight: "16px", color, whiteSpace: "nowrap" }}>
+                  {item.label}
+                </Typography>
+              </Box>
+            );
+          })}
         </Box>
       </Box>
     </Box>
