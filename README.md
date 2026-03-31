@@ -1,4 +1,4 @@
-#About Storyroom
+# About Storyroom
 
 A social audiobook club where people read the same book, on the same schedule, and gather in a Salon to talk about it. The concept started as a response to audiobook discovery problems and the Silent Book Club phenomenon. Rooms organized around a book and a chapter pace. I designed an AI agent called StoryBot that hosts the discussion and answers questions only it can answer. Readers share audio passages clipped directly from the chapter and respond to each other in real time. Five screens designed in Figma Make, a full React prototype built with Claude Code. The whole thing conceived and built in conversation with AI.
 
