@@ -734,7 +734,7 @@ function BottomNav({ onNavigate }: { onNavigate?: (tab: string) => void }) {
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         {tabs.map((t) => {
           const isActive = t.key === "discover"; // Discover tab is always active on this screen
-          const color = isActive ? c.pink : c.sage;
+          const color = isActive ? c.pink : "rgba(211,232,226,0.7)";
           return (
             <Box key={t.key} onClick={() => onNavigate?.(t.key)} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}>
               <t.Icon color={color} />

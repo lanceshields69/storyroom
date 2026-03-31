@@ -598,7 +598,7 @@ export default function RoomPage({ room, onBack, onEnterSalon, onNavigate }: Pro
             { label: "Profile", Icon: ProfileIcon,  key: "profile" },
           ].map((item) => {
             const isActive = item.key === "rooms";
-            const color = isActive ? c.pink : c.sage;
+            const color = isActive ? c.pink : "rgba(211,232,226,0.7)";
             return (
               <Box
                 key={item.key}

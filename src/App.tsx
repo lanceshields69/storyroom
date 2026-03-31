@@ -764,7 +764,7 @@ export default function App() {
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               {NAV_ITEMS.map((item) => {
                 const isActive = item.key === "rooms"; // Rooms tab is always active on this screen
-                const color = isActive ? c.pink : c.sage;
+                const color = isActive ? c.pink : "rgba(211,232,226,0.7)";
                 return (
                   <Box
                     key={item.label}
