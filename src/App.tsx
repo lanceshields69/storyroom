@@ -760,19 +760,19 @@ export default function App() {
           </Box>
 
           {/* ── Bottom navigation ─────────────────── */}
-          <Box sx={{ bgcolor: c.navy, borderTop: `0.556px solid ${c.navyBorder}`, px: "24px", pt: "16px", pb: "20px" }}>
+          <Box sx={{ bgcolor: c.navy, borderTop: `0.556px solid ${c.navyBorder}`, px: "24px", pt: "16px", pb: "20px", flexShrink: 0 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               {NAV_ITEMS.map((item) => {
-                const isActive = item.key === "rooms"; // Rooms tab is always active on this screen
+                const isActive = item.key === "rooms";
                 const color = isActive ? c.pink : "rgba(211,232,226,0.7)";
                 return (
                   <Box
-                    key={item.label}
+                    key={item.key}
                     onClick={() => { setActiveNav(item.key); }}
                     sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", minWidth: 40 }}
                   >
                     <item.Icon color={color} />
-                    <Typography sx={{ fontFamily: sans, fontSize: 12, lineHeight: "16px", color, whiteSpace: "nowrap" }}>
+                    <Typography sx={{ fontFamily: sans, fontSize: 12, color, whiteSpace: "nowrap" }}>
                       {item.label}
                     </Typography>
                   </Box>
