@@ -9,7 +9,11 @@ import profile2    from "./assets/profile2.jpg";
 import profile3    from "./assets/profile3.jpg";
 import profile4    from "./assets/profile4.jpg";
 import profile5    from "./assets/profile5.jpg";
-import coverHobbit from "./assets/the-hobbit.jpg";
+import coverHobbit      from "./assets/the-hobbit.jpg";
+import coverPiranesi    from "./assets/rebecca.jpg";
+import coverNameOfWind  from "./assets/stardust.jpg";
+import coverNeverLetGo  from "./assets/normal-people.jpg";
+import coverStationElev from "./assets/the-night-circus.jpg";
 
 const sans  = "'Plus Jakarta Sans', sans-serif";
 const serif = "'Besley', serif";
@@ -32,7 +36,7 @@ const PROFILE_ROOMS = [
   {
     name: "Sunday Slow room", bookTitle: "Piranesi", author: "Susanna Clarke",
     chapter: 11, totalChapters: 18, memberCount: 94, active: true, progress: 61,
-    avatars: [profile4, profile5, profile1], cover: null, coverColor: "#6B3A2A",
+    avatars: [profile4, profile5, profile1], cover: coverPiranesi, coverColor: "#6B3A2A",
   },
 ];
 
@@ -46,13 +50,13 @@ const PASSAGES = [
     room: "The Midnight Archive", played: 0.4, reactions: ["❤️", "😉"],
   },
   {
-    bookTitle: "Piranesi", cover: null, coverColor: "#6B3A2A",
+    bookTitle: "Piranesi", cover: coverPiranesi, coverColor: "#6B3A2A",
     chapter: 11, timestamp: "2:18:05",
     quote: "I am not lost. I have always been exactly where I am...",
     room: "Sunday Slow room", played: 0.6, reactions: ["❤️", "😮"],
   },
   {
-    bookTitle: "The Name of the Wind", cover: null, coverColor: "#0D3D3A",
+    bookTitle: "The Name of the Wind", cover: coverNameOfWind, coverColor: "#0D3D3A",
     chapter: 22, timestamp: "3:44:10",
     quote: "It's the questions we can't answer that teach us the most...",
     room: "Deep Readers room", played: 0.3, reactions: ["😎", "❤️"],
@@ -60,9 +64,9 @@ const PASSAGES = [
 ];
 
 const FINISHED_BOOKS = [
-  { title: "The Name of the Wind", color: "#0D3D3A" },
-  { title: "Never Let Me Go",      color: "#2A4A6B" },
-  { title: "Station Eleven",       color: "#1A1A5C" },
+  { title: "The Name of the Wind", cover: coverNameOfWind,  color: "#0D3D3A" },
+  { title: "Never Let Me Go",      cover: coverNeverLetGo,  color: "#2A4A6B" },
+  { title: "Station Eleven",       cover: coverStationElev, color: "#1A1A5C" },
 ];
 
 // ── Passage waveform ──────────────────────────────────────────────────────────
@@ -393,10 +397,8 @@ export default function Profile({ rooms, onRoomSelect, onSalonOpen, onNavigate }
 
         <Box sx={{ px: "16px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
           {FINISHED_BOOKS.map((book) => (
-            <Box key={book.title} sx={{ aspectRatio: "1", borderRadius: "10px", overflow: "hidden", position: "relative", bgcolor: book.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Typography sx={{ fontFamily: sans, fontSize: 7, color: c.gold, textAlign: "center", px: "6px", lineHeight: "10px", userSelect: "none" }}>
-                {book.title}
-              </Typography>
+            <Box key={book.title} sx={{ aspectRatio: "1", borderRadius: "10px", overflow: "hidden", position: "relative", bgcolor: book.color }}>
+              <Box component="img" src={book.cover} alt={book.title} sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               {/* Antique Gold completed indicator */}
               <Box sx={{ position: "absolute", bottom: 5, right: 5, height: 16, px: "6px", borderRadius: "9999px", bgcolor: c.gold, display: "flex", alignItems: "center", gap: "4px" }}>
                 <Typography sx={{ fontFamily: sans, fontSize: 7, fontWeight: 600, color: c.navy, whiteSpace: "nowrap", lineHeight: 1 }}>Completed</Typography>
