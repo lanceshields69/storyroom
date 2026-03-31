@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type { RoomData } from "./RoomPage";
 
 // Book covers (used by AudiobooksSection)
@@ -26,6 +26,63 @@ const c = {
   gold: "#cdb670",
   lavender: "#c1baff",
 };
+
+// ── Drag-to-scroll hook (enables mouse drag on horizontal carousels) ───────────
+function useDragScroll(externalRef?: React.RefObject<HTMLDivElement | null>) {
+  const internalRef = useRef<HTMLDivElement>(null);
+  const ref = externalRef ?? internalRef;
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const moved = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const onMouseDown = (e: MouseEvent) => {
+      dragging.current = true;
+      moved.current = false;
+      startX.current = e.pageX - el.offsetLeft;
+      scrollLeft.current = el.scrollLeft;
+      el.style.cursor = "grabbing";
+      el.style.userSelect = "none";
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragging.current) return;
+      const x = e.pageX - el.offsetLeft;
+      const delta = x - startX.current;
+      if (Math.abs(delta) > 4) moved.current = true;
+      el.scrollLeft = scrollLeft.current - delta;
+    };
+
+    const onMouseUp = () => {
+      dragging.current = false;
+      el.style.cursor = "";
+      el.style.userSelect = "";
+    };
+
+    // Suppress click on children when a drag occurred
+    const onClickCapture = (e: MouseEvent) => {
+      if (moved.current) { e.stopPropagation(); moved.current = false; }
+    };
+
+    el.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    el.addEventListener("click", onClickCapture, true);
+
+    return () => {
+      el.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      el.removeEventListener("click", onClickCapture, true);
+    };
+  }, []);
+
+  return ref;
+}
 
 // ── Mini waveform ─────────────────────────────────────────────────────────────
 const WAVE = [6, 12, 8, 16, 10, 18, 8, 14, 6, 12, 16, 10, 14, 8, 12, 6];
@@ -64,6 +121,7 @@ function SectionHead({ label, sub }: { label: string; sub?: string }) {
 function HeroCarousel({ rooms, onSelect }: { rooms: RoomData[]; onSelect: (r: RoomData) => void }) {
   const [active, setActive] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  useDragScroll(scrollRef);
   const slides = rooms.slice(0, 3);
 
   const goTo = (i: number) => {
@@ -239,10 +297,11 @@ const GENRE_CHAPTER_COLORS: Record<string, { bg: string; border: string }> = {
 };
 
 function RoomsForYou({ rooms, onSelect }: { rooms: RoomData[]; onSelect: (r: RoomData) => void }) {
+  const dragRef = useDragScroll();
   return (
     <Box>
       <SectionHead label="Rooms for you" />
-      <Box sx={{ display: "flex", gap: "8px", overflowX: "auto", "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none", pb: "4px" }}>
+      <Box ref={dragRef} sx={{ display: "flex", gap: "8px", overflowX: "auto", "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none", pb: "4px" }}>
         {rooms.map((room) => {
           const chColor = GENRE_CHAPTER_COLORS[room.genre] ?? { bg: "rgba(211,232,226,0.63)", border: "#d3e8e2" };
           return (
@@ -633,10 +692,11 @@ const NARRATORS = [
 ];
 
 function Narrators() {
+  const dragRef = useDragScroll();
   return (
     <Box>
       <SectionHead label="Story narrators to follow" />
-      <Box sx={{ display: "flex", gap: "10px", overflowX: "auto", "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
+      <Box ref={dragRef} sx={{ display: "flex", gap: "10px", overflowX: "auto", "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
         {NARRATORS.map((n) => (
           <Box key={n.name} sx={{
             bgcolor: "rgba(238,233,220,0.04)", border: "0.556px solid rgba(238,233,220,0.1)",
@@ -700,6 +760,7 @@ type ExploreProps = {
 
 export default function Explore({ rooms, onRoomSelect, onNavigate }: ExploreProps) {
   const [activeTab, setActiveTab] = useState("For you");
+  const filterTabsRef = useDragScroll();
 
   const heroRooms = rooms.slice(0, 3);
   const forYouRooms = rooms.slice(3, 7);
@@ -806,7 +867,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate }: ExploreProp
       </Box>
 
       {/* ── Filter tabs ────────────────────────────── */}
-      <Box sx={{
+      <Box ref={filterTabsRef} sx={{
         flexShrink: 0, display: "flex", gap: "8px", overflowX: "auto", px: "16px", pb: "10px",
         "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none",
       }}>
