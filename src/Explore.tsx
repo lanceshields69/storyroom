@@ -774,7 +774,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate }: ExploreProp
       <Box sx={{ flexShrink: 0, px: "24px", pt: "15px", pb: "10px" }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {/* Logo: animated cat + wordmark */}
-          <Box sx={{ position: "relative", width: 102, height: 43 }}>
+          <Box onClick={() => onNavigate?.("rooms")} sx={{ position: "relative", width: 102, height: 43, cursor: "pointer" }}>
             {/* Cat 1 — slides in from left then fades out */}
             <Box sx={{
               position: "absolute", top: 0, left: 54, width: 43, height: 28, opacity: 0,

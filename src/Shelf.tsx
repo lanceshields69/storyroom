@@ -144,7 +144,7 @@ export default function Shelf({ rooms, onRoomSelect, onSalonOpen, onNavigate }: 
       <Box sx={{ flexShrink: 0, px: "24px", pt: "15px", pb: "0px" }}>
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: "8px" }}>
           {/* Logo: animated cat + wordmark */}
-          <Box sx={{ position: "relative", width: 102, height: 43 }}>
+          <Box onClick={() => onNavigate?.("rooms")} sx={{ position: "relative", width: 102, height: 43, cursor: "pointer" }}>
             <Box sx={{
               position: "absolute", top: 0, left: 54, width: 43, height: 28, opacity: 0,
               "@keyframes cat1-transform": {
