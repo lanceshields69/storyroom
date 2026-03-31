@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import type { RoomData } from "./RoomPage";
 import { RoomsIcon, DiscoverIcon, LibraryIcon, ProfileIcon } from "./NavIcons";
 
+import catLogo1    from "./assets/cat-logo-1.svg";
 import catLogo2    from "./assets/cat-logo-2.svg";
 import profile1    from "./assets/profile1.jpg";
 import profile2    from "./assets/profile2.jpg";
@@ -123,8 +124,72 @@ export default function Profile({ rooms, onRoomSelect, onSalonOpen, onNavigate }
       <Box sx={{ flexShrink: 0, px: "24px", pt: "15px", pb: "0px" }}>
         <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <Box sx={{ position: "relative", width: 102, height: 43 }}>
-            <Box component="img" src={catLogo2} alt="" sx={{ position: "absolute", top: -3, left: 54, width: 54, height: 35 }} />
-            <Typography sx={{ position: "absolute", bottom: 0, left: 0, fontFamily: serif, fontWeight: 600, fontSize: "18.4px", lineHeight: "22px", letterSpacing: "-0.27px", color: c.cream, whiteSpace: "nowrap" }}>
+            <Box sx={{
+              position: "absolute", top: 0, left: 54, width: 43, height: 28, opacity: 0,
+              "@keyframes cat1-transform": {
+                "0%":    { transform: "translateX(-34px)" },
+                "53.6%": { transform: "translateX(-34px)", animationTimingFunction: "ease-in" },
+                "75%":   { transform: "translateX(0px)" },
+                "100%":  { transform: "translateX(0px)" },
+              },
+              "@keyframes cat1-opacity": {
+                "0%":    { opacity: 0 },
+                "17.9%": { opacity: 1 },
+                "82.1%": { opacity: 1 },
+                "100%":  { opacity: 0 },
+              },
+              animation: "cat1-transform 2.8s linear forwards, cat1-opacity 2.8s ease forwards",
+              animationDelay: "0.5s",
+            }}>
+              <Box sx={{
+                "@keyframes cat1-wobble": {
+                  "0%":    { transform: "translateY(0) rotate(0deg)" },
+                  "53.6%": { transform: "translateY(0) rotate(0deg)" },
+                  "57.1%": { transform: "translateY(-2px) rotate(1.5deg)" },
+                  "60.7%": { transform: "translateY(0) rotate(0deg)" },
+                  "64.3%": { transform: "translateY(-2px) rotate(-1.5deg)" },
+                  "67.9%": { transform: "translateY(0) rotate(0deg)" },
+                  "71.4%": { transform: "translateY(-2px) rotate(1.5deg)" },
+                  "75%":   { transform: "translateY(0) rotate(0deg)" },
+                  "100%":  { transform: "translateY(0) rotate(0deg)" },
+                },
+                animation: "cat1-wobble 2.8s linear forwards",
+                animationDelay: "0.5s",
+              }}>
+                <Box component="img" src={catLogo1} alt="" sx={{ width: 43, height: 28, display: "block", transform: "rotate(180deg) scaleY(-1)" }} />
+              </Box>
+            </Box>
+            <Box sx={{
+              position: "absolute", top: -3, left: 54, width: 54, height: 35, opacity: 0,
+              "@keyframes cat2-opacity": {
+                "0%":    { opacity: 0 },
+                "82.1%": { opacity: 0 },
+                "100%":  { opacity: 1 },
+              },
+              animation: "cat2-opacity 2.8s linear forwards",
+              animationDelay: "0.5s",
+            }}>
+              <Box sx={{
+                "@keyframes cat2-wobble": {
+                  "0%":   { transform: "translateY(0) rotate(0deg)" },
+                  "35%":  { transform: "translateY(-6px) rotate(5deg)" },
+                  "60%":  { transform: "translateY(1px) rotate(-2.5deg)" },
+                  "72%":  { transform: "translateY(-2px) rotate(1.5deg)" },
+                  "84%":  { transform: "translateY(0.5px) rotate(-0.5deg)" },
+                  "100%": { transform: "translateY(0) rotate(0deg)" },
+                },
+                animation: "cat2-wobble 0.55s ease forwards",
+                animationDelay: "3.5s",
+              }}>
+                <Box component="img" src={catLogo2} alt="" sx={{ width: 54, height: 35, display: "block" }} />
+              </Box>
+            </Box>
+            <Typography sx={{
+              position: "absolute", bottom: 0, left: 0, fontFamily: serif, fontWeight: 600, fontSize: "18.4px", lineHeight: "22px", letterSpacing: "-0.27px", color: c.cream, whiteSpace: "nowrap",
+              opacity: 0,
+              "@keyframes wordmark-fade": { "0%": { opacity: 0 }, "100%": { opacity: 1 } },
+              animation: "wordmark-fade 0.5s ease forwards",
+            }}>
               storyroom
             </Typography>
           </Box>
