@@ -212,7 +212,7 @@ export default function Shelf({ rooms, onRoomSelect, onSalonOpen, onNavigate }: 
               "@keyframes wordmark-fade": { "0%": { opacity: 0 }, "100%": { opacity: 1 } },
               animation: "wordmark-fade 0.5s ease forwards",
             }}>
-              storyroom
+              Storyroom
             </Typography>
           </Box>
           {/* Profile avatar */}

@@ -850,7 +850,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
               "@keyframes wordmark-fade": { "0%": { opacity: 0 }, "100%": { opacity: 1 } },
               animation: "wordmark-fade 0.5s ease forwards",
             }}>
-              storyroom
+              Storyroom
             </Typography>
           </Box>
           {/* Profile avatar */}
