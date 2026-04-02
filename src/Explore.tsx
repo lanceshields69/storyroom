@@ -686,22 +686,23 @@ function MoodFinder({ rooms, onRoomSelect }: { rooms: RoomData[]; onRoomSelect: 
 
 // ── Narrators to follow ─────────────────────────────────────────────────────────
 const NARRATORS = [
-  { name: "Sienna Wilson", room: "The Midnight Arc...", avatar: profile1 },
-  { name: "Marcus Chan", room: "Soap Hotel Hour...", avatar: profile2 },
-  { name: "Clara Osei", room: "Sunday Slow Room...", avatar: profile3 },
+  { id: "sienna_wilson", name: "Sienna Wilson", room: "The Midnight Arc...", avatar: profile1 },
+  { id: "marcus_chan",   name: "Marcus Chan",   room: "Soap Hotel Hour...", avatar: profile2 },
+  { id: "clara_osei",   name: "Clara Osei",    room: "Sunday Slow Room...", avatar: profile3 },
 ];
 
-function Narrators() {
+function Narrators({ onMemberSelect }: { onMemberSelect?: (id: string) => void }) {
   const dragRef = useDragScroll();
   return (
     <Box>
       <SectionHead label="Story narrators to follow" />
       <Box ref={dragRef} sx={{ display: "flex", gap: "10px", overflowX: "auto", "&::-webkit-scrollbar": { display: "none" }, scrollbarWidth: "none" }}>
         {NARRATORS.map((n) => (
-          <Box key={n.name} sx={{
+          <Box key={n.name} onClick={() => onMemberSelect?.(n.id)} sx={{
             bgcolor: "rgba(238,233,220,0.04)", border: "0.556px solid rgba(238,233,220,0.1)",
             borderRadius: "14px", p: "14px", flexShrink: 0, width: 140,
             display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
+            cursor: onMemberSelect ? "pointer" : "default",
           }}>
             <Box component="img" src={n.avatar} alt="" sx={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover" }} />
             <Box sx={{ textAlign: "center" }}>
@@ -756,9 +757,10 @@ type ExploreProps = {
   rooms: RoomData[];
   onRoomSelect: (room: RoomData) => void;
   onNavigate?: (tab: string) => void;
+  onMemberSelect?: (id: string) => void;
 };
 
-export default function Explore({ rooms, onRoomSelect, onNavigate }: ExploreProps) {
+export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelect }: ExploreProps) {
   const [activeTab, setActiveTab] = useState("For you");
   const filterTabsRef = useDragScroll();
 
@@ -908,7 +910,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate }: ExploreProp
             <ThisWeek rooms={weekRooms} onSelect={onRoomSelect} />
             <AudiobooksSection />
             <MoodFinder rooms={rooms} onRoomSelect={onRoomSelect} />
-            <Narrators />
+            <Narrators onMemberSelect={onMemberSelect} />
           </Box>
         </Box>
       </Box>

@@ -8,6 +8,7 @@ import Salon from "./Salon";
 import Explore from "./Explore";
 import Shelf from "./Shelf";
 import Profile from "./Profile";
+import MemberProfile from "./MemberProfile";
 
 // Nav icons
 import catLogo1 from "./assets/cat-logo-1.svg";
@@ -221,6 +222,7 @@ export default function App() {
   const [showSalon, setShowSalon] = useState(false);
   const [currentRoom, setCurrentRoom] = useState<Room | null>(null);
   const [activeNav, setActiveNav] = useState("rooms");
+  const [currentMember, setCurrentMember] = useState<string | null>(null);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
@@ -327,31 +329,40 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      {currentRoom && showSalon && (
+      {currentMember !== null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
-          <Salon room={currentRoom} onBack={() => setShowSalon(false)} />
+          <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
+            <MemberProfile memberId={currentMember} onBack={() => setCurrentMember(null)} />
+          </Box>
         </Box>
       )}
 
-      {currentRoom && !showSalon && (
+      {currentRoom && showSalon && currentMember === null && (
+        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+          <Salon room={currentRoom} onBack={() => setShowSalon(false)} onMemberSelect={(id) => setCurrentMember(id)} />
+        </Box>
+      )}
+
+      {currentRoom && !showSalon && currentMember === null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
           <RoomPage room={currentRoom} onBack={() => { setCurrentRoom(null); setShowSalon(false); }} onEnterSalon={() => setShowSalon(true)} onNavigate={(tab) => { setCurrentRoom(null); setShowSalon(false); setActiveNav(tab); }} />
         </Box>
       )}
 
-      {!currentRoom && activeNav === "discover" && (
+      {!currentRoom && activeNav === "discover" && currentMember === null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
           <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
             <Explore
               rooms={ROOMS}
               onRoomSelect={(room) => { setCurrentRoom(room); }}
               onNavigate={(tab) => setActiveNav(tab)}
+              onMemberSelect={(id) => setCurrentMember(id)}
             />
           </Box>
         </Box>
       )}
 
-      {!currentRoom && activeNav === "shelf" && (
+      {!currentRoom && activeNav === "shelf" && currentMember === null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
           <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
             <Shelf
@@ -364,7 +375,7 @@ export default function App() {
         </Box>
       )}
 
-      {!currentRoom && activeNav === "profile" && (
+      {!currentRoom && activeNav === "profile" && currentMember === null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
           <Box sx={{ width: { xs: "100%", sm: 393 }, height: { xs: "100dvh", sm: 874 }, bgcolor: "#0a005a", borderRadius: { xs: 0, sm: "44px" }, overflow: "hidden", boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" } }}>
             <Profile
@@ -377,7 +388,7 @@ export default function App() {
         </Box>
       )}
 
-      <Box sx={{ display: currentRoom || activeNav === "discover" || activeNav === "shelf" || activeNav === "profile" ? "none" : "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
+      <Box sx={{ display: currentRoom || activeNav === "discover" || activeNav === "shelf" || activeNav === "profile" || currentMember !== null ? "none" : "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
         {/* Mobile frame */}
         <Box
           sx={{

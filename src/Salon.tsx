@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { useState, useRef, useCallback, useMemo, useEffect, type ReactNode, type ChangeEvent } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect, type ReactNode, type ChangeEvent, type KeyboardEvent } from "react";
 import type { RoomData } from "./RoomPage";
 
 import loveImg from "./assets/love-it.png";
@@ -249,14 +249,15 @@ const PassageCard = ({ chapter, timestamp, quote, duration, playedRatio }: Passa
 const getInitials = (name: string) =>
   name.replace(/_/g, " ").split(" ").slice(0, 2).map(p => p[0]?.toUpperCase() ?? "").join("");
 
-const UserAvatar = ({ name, size = 28 }: { name: string; size?: number }) => {
+const UserAvatar = ({ name, size = 28, onClick }: { name: string; size?: number; onClick?: () => void }) => {
   const src = USER_AVATARS[name];
   return (
-    <Box sx={{
+    <Box onClick={onClick} sx={{
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
       bgcolor: "rgba(139,169,198,0.25)",
       display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden",
+      cursor: onClick ? "pointer" : "default",
     }}>
       {src ? (
         <Box component="img" src={src} alt={name} sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -277,9 +278,10 @@ type ReplyItemProps = {
   messageId: string;
   onLongPress: (id: string, rect: DOMRect) => void;
   userReaction?: string;
+  onMemberSelect?: (name: string) => void;
 };
 
-const ReplyItem = ({ reply, messageId, onLongPress, userReaction }: ReplyItemProps) => {
+const ReplyItem = ({ reply, messageId, onLongPress, userReaction, onMemberSelect }: ReplyItemProps) => {
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const pressHandlers = useLongPress(useCallback(() => {
     if (bubbleRef.current) onLongPress(messageId, bubbleRef.current.getBoundingClientRect());
@@ -319,7 +321,7 @@ const ReplyItem = ({ reply, messageId, onLongPress, userReaction }: ReplyItemPro
   }
   return (
     <Box sx={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-      <UserAvatar name={reply.author!} size={20} />
+      <UserAvatar name={reply.author!} size={20} onClick={reply.author ? () => onMemberSelect?.(reply.author!) : undefined} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box
           ref={bubbleRef}
@@ -331,7 +333,10 @@ const ReplyItem = ({ reply, messageId, onLongPress, userReaction }: ReplyItemPro
             userSelect: "none", WebkitUserSelect: "none", cursor: "default",
           }}
         >
-          <Typography sx={{ fontFamily: sans, fontSize: 11, fontWeight: 500, color: "rgba(238,233,220,0.45)", mb: "2px" }}>
+          <Typography
+            onClick={() => reply.author && onMemberSelect?.(reply.author)}
+            sx={{ fontFamily: sans, fontSize: 11, fontWeight: 500, color: "rgba(238,233,220,0.45)", mb: "2px", cursor: onMemberSelect && reply.author ? "pointer" : "default" }}
+          >
             {reply.author}
           </Typography>
           <Typography sx={{ fontFamily: sans, fontSize: 12, color: "rgba(238,233,220,0.75)", lineHeight: "17px" }}>
@@ -349,9 +354,10 @@ type ReplyThreadProps = {
   parentId: string;
   onLongPress: (id: string, rect: DOMRect) => void;
   userReactions?: Record<string, string>;
+  onMemberSelect?: (name: string) => void;
 };
 
-const ReplyThread = ({ replies, parentId, onLongPress, userReactions = {} }: ReplyThreadProps) => (
+const ReplyThread = ({ replies, parentId, onLongPress, userReactions = {}, onMemberSelect }: ReplyThreadProps) => (
   <Box sx={{
     ml: "36px", mt: "8px",
     borderLeft: "1px solid rgba(226,169,201,0.20)",
@@ -365,6 +371,7 @@ const ReplyThread = ({ replies, parentId, onLongPress, userReactions = {} }: Rep
         messageId={`${parentId}-r${i}`}
         onLongPress={onLongPress}
         userReaction={userReactions[`${parentId}-r${i}`]}
+        onMemberSelect={onMemberSelect}
       />
     ))}
   </Box>
@@ -481,24 +488,30 @@ type UserPostProps = {
   passage?: ReactNode;
   replies?: Reply[];
   directed?: boolean;
+  flash?: boolean;
+  onMemberSelect?: (name: string) => void;
   initialReactions?: string[];
   userReaction?: string;
   userReactions?: Record<string, string>;
   onLongPress: (messageId: string, rect: DOMRect) => void;
 };
 
-const UserPost = ({ messageId, author, time, text, passage, replies, directed, initialReactions, userReaction, userReactions, onLongPress }: UserPostProps) => {
+const UserPost = ({ messageId, author, time, text, passage, replies, directed, flash, onMemberSelect, initialReactions, userReaction, userReactions, onLongPress }: UserPostProps) => {
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const pressHandlers = useLongPress(useCallback(() => {
     if (bubbleRef.current) onLongPress(messageId, bubbleRef.current.getBoundingClientRect());
   }, [messageId, onLongPress]));
 
+  const canNav = author !== "you" && !!onMemberSelect;
   return (
     <Box sx={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-      <UserAvatar name={author} />
+      <UserAvatar name={author} onClick={canNav ? () => onMemberSelect!(author) : undefined} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Box sx={{ display: "flex", alignItems: "baseline", gap: "8px", mb: "5px" }}>
-          <Typography sx={{ fontFamily: sans, fontSize: 11, fontWeight: 500, color: "rgba(238,233,220,0.45)" }}>
+          <Typography
+            onClick={canNav ? () => onMemberSelect!(author) : undefined}
+            sx={{ fontFamily: sans, fontSize: 11, fontWeight: 500, color: "rgba(238,233,220,0.45)", cursor: canNav ? "pointer" : "default" }}
+          >
             {author}
           </Typography>
           {time && (
@@ -518,6 +531,13 @@ const UserPost = ({ messageId, author, time, text, passage, replies, directed, i
             userSelect: "none",
             WebkitUserSelect: "none",
             cursor: "default",
+            ...(flash && {
+              "@keyframes flashBubble": {
+                "0%": { backgroundColor: "hsl(247, 67%, 41%)" },
+                "100%": { backgroundColor: "#20166E" },
+              },
+              animation: "flashBubble 1.8s ease forwards",
+            }),
           }}
         >
           <Typography sx={{
@@ -536,7 +556,7 @@ const UserPost = ({ messageId, author, time, text, passage, replies, directed, i
           userReaction={userReaction}
           hasPassage={!!passage}
         />
-        {replies && <ReplyThread replies={replies} parentId={messageId} onLongPress={onLongPress} userReactions={userReactions} />}
+        {replies && <ReplyThread replies={replies} parentId={messageId} onLongPress={onLongPress} userReactions={userReactions} onMemberSelect={onMemberSelect} />}
       </Box>
     </Box>
   );
@@ -554,9 +574,10 @@ type StorybotPostProps = {
   userReaction?: string;
   userReactions?: Record<string, string>;
   onLongPress: (messageId: string, rect: DOMRect) => void;
+  onMemberSelect?: (name: string) => void;
 };
 
-const StorybotPost = ({ messageId, text, passage, passageFirst, citation, replies, initialReactions, userReaction, userReactions, onLongPress }: StorybotPostProps) => {
+const StorybotPost = ({ messageId, text, passage, passageFirst, citation, replies, initialReactions, userReaction, userReactions, onLongPress, onMemberSelect }: StorybotPostProps) => {
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const pressHandlers = useLongPress(useCallback(() => {
     if (bubbleRef.current) onLongPress(messageId, bubbleRef.current.getBoundingClientRect());
@@ -599,7 +620,7 @@ const StorybotPost = ({ messageId, text, passage, passageFirst, citation, replie
           userReaction={userReaction}
           hasPassage={!!passage}
         />
-        {replies && <ReplyThread replies={replies} parentId={messageId} onLongPress={onLongPress} userReactions={userReactions} />}
+        {replies && <ReplyThread replies={replies} parentId={messageId} onLongPress={onLongPress} userReactions={userReactions} onMemberSelect={onMemberSelect} />}
       </Box>
     </Box>
   );
@@ -620,6 +641,8 @@ const getExcerpt = (midpoint: number) =>
   midpoint < 0.34 ? EXCERPTS[0] : midpoint < 0.67 ? EXCERPTS[1] : EXCERPTS[2];
 
 type SharedPost = { id: string; playedRatio: number; caption: string; excerpt: string; timestampRange: string };
+type ChatPost   = { id: string; text: string };
+type AskPost    = { id: string; question: string; answered: boolean };
 
 type PassageSheetProps = {
   visible: boolean;
@@ -1007,17 +1030,122 @@ const PassageSheet = ({ visible, room, onClose, onShare }: PassageSheetProps) =>
   );
 };
 
-// ── Salon ──────────────────────────────────────────────────────────────────
-type Props = { room: RoomData; onBack: () => void };
+// ── Ask sheet ──────────────────────────────────────────────────────────────
+type AskSheetProps = { visible: boolean; onClose: () => void; onAsk: (question: string) => void };
 
-export default function Salon({ room, onBack }: Props) {
+const AskSheet = ({ visible, onAsk }: AskSheetProps) => {
+  const [text, setText] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (visible) {
+      setText("");
+      const t = setTimeout(() => textareaRef.current?.focus(), 220);
+      return () => clearTimeout(t);
+    }
+  }, [visible]);
+
+  const handleSubmit = () => {
+    const q = text.trim();
+    if (!q) return;
+    onAsk(q);
+    setText("");
+  };
+
+  return (
+    <Box sx={{
+      position: "absolute", bottom: 0, left: 0, right: 0, height: "35%",
+      bgcolor: "#0D0060",
+      borderTop: "0.5px solid rgba(238,233,220,0.10)",
+      borderRadius: "20px 20px 0 0",
+      display: "flex", flexDirection: "column",
+      transform: visible ? "translateY(0)" : "translateY(105%)",
+      transition: "transform 300ms ease-out",
+      zIndex: 60,
+      px: "20px", pb: "20px",
+    }}>
+      {/* Drag pill */}
+      <Box sx={{ display: "flex", justifyContent: "center", pt: "10px", pb: "8px", flexShrink: 0 }}>
+        <Box sx={{ width: 36, height: 4, bgcolor: "rgba(238,233,220,0.20)", borderRadius: "2px" }} />
+      </Box>
+
+      {/* Header */}
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: "8px", mb: "12px", flexShrink: 0 }}>
+        <Box sx={{ mt: "1px", flexShrink: 0 }}><StorybotIcon size={22} /></Box>
+        <Box>
+          <Typography sx={{ fontFamily: sans, fontSize: 13, fontWeight: 500, color: c.sage, lineHeight: "18px" }}>
+            Ask StoryBot
+          </Typography>
+          <Typography sx={{ fontFamily: sans, fontSize: 11, color: "rgba(238,233,220,0.35)", lineHeight: "16px" }}>
+            Your question and the answer will be shared with the room.
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Textarea */}
+      <Box
+        component="textarea"
+        ref={textareaRef}
+        value={text}
+        onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)}
+        onKeyDown={(e: KeyboardEvent<HTMLTextAreaElement>) => {
+          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+        }}
+        placeholder="Ask anything about the book, the author, the context..."
+        sx={{
+          flex: 1,
+          bgcolor: "rgba(238,233,220,0.05)",
+          border: `0.5px solid rgba(211,232,226,0.20)`,
+          borderRadius: "12px",
+          p: "12px",
+          fontFamily: sans, fontSize: 12, color: c.cream,
+          lineHeight: "18px", letterSpacing: "-0.3px",
+          outline: "none", resize: "none",
+          boxSizing: "border-box",
+          "&::placeholder": { color: "rgba(238,233,220,0.30)" },
+        }}
+      />
+
+      {/* Ask button */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: "10px", flexShrink: 0 }}>
+        <Box
+          onClick={handleSubmit}
+          sx={{
+            height: 32, px: "16px", borderRadius: "9999px",
+            bgcolor: "rgba(211,232,226,0.15)",
+            border: `0.5px solid ${c.sage}`,
+            display: "flex", alignItems: "center", cursor: "pointer",
+          }}
+        >
+          <Typography sx={{ fontFamily: sans, fontSize: 12, fontWeight: 500, color: c.sage }}>Ask StoryBot</Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+// ── Salon ──────────────────────────────────────────────────────────────────
+type Props = { room: RoomData; onBack: () => void; onMemberSelect?: (id: string) => void };
+
+export default function Salon({ room, onBack, onMemberSelect }: Props) {
   const salonRef = useRef<HTMLDivElement | null>(null);
   const [picker, setPicker] = useState<PickerState | null>(null);
   const [userReactions, setUserReactions] = useState<Record<string, string>>({});
   const [showPassageSheet, setShowPassageSheet] = useState(false);
+  const [showAskSheet, setShowAskSheet] = useState(false);
   const [sharedPosts, setSharedPosts] = useState<SharedPost[]>([]);
+  const [chatPosts, setChatPosts] = useState<ChatPost[]>([]);
+  const [askPosts, setAskPosts] = useState<AskPost[]>([]);
+  const [newPostId, setNewPostId] = useState<string | null>(null);
   const [composeText, setComposeText] = useState("");
   const composeRef = useRef<HTMLTextAreaElement | null>(null);
+  const feedRef = useRef<HTMLDivElement | null>(null);
+  const askPostRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Scroll to bottom on mount so most recent activity is visible
+  useEffect(() => {
+    if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
+  }, []);
 
   const handleComposeChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setComposeText(e.target.value);
@@ -1055,8 +1183,40 @@ export default function Salon({ room, onBack }: Props) {
 
   const handleShare = useCallback((playedRatio: number, caption: string, excerpt: string, timestampRange: string) => {
     const id = `shared-${Date.now()}`;
-    setSharedPosts(prev => [{ id, playedRatio, caption, excerpt, timestampRange }, ...prev]);
+    setSharedPosts(prev => [...prev, { id, playedRatio, caption, excerpt, timestampRange }]);
     setShowPassageSheet(false);
+    requestAnimationFrame(() => {
+      if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
+    });
+  }, []);
+
+  const handleComposeSubmit = useCallback(() => {
+    const text = composeText.trim();
+    if (!text) return;
+    const id = `chat-${Date.now()}`;
+    setChatPosts(prev => [...prev, { id, text }]);
+    setNewPostId(id);
+    setComposeText("");
+    if (composeRef.current) composeRef.current.style.height = "auto";
+    requestAnimationFrame(() => {
+      if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
+    });
+    setTimeout(() => setNewPostId(null), 2000);
+  }, [composeText]);
+
+  const handleAsk = useCallback((question: string) => {
+    const id = `ask-${Date.now()}`;
+    setAskPosts(prev => [...prev, { id, question, answered: false }]);
+    setShowAskSheet(false);
+    setTimeout(() => {
+      askPostRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 120);
+    setTimeout(() => {
+      setAskPosts(prev => prev.map(p => p.id === id ? { ...p, answered: true } : p));
+      setTimeout(() => {
+        askPostRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
+    }, 900);
   }, []);
 
   const postProps = (id: string) => ({
@@ -1129,33 +1289,12 @@ export default function Salon({ room, onBack }: Props) {
       </Box>
 
       {/* ── Feed ────────────────────────────────────────────────────────── */}
-      <Box sx={{
+      <Box ref={feedRef} sx={{
         flex: 1, overflowY: "auto", px: "16px", py: "16px",
         display: "flex", flexDirection: "column", gap: "16px",
         "&::-webkit-scrollbar": { display: "none" },
         scrollbarWidth: "none",
       }}>
-
-        {sharedPosts.map(sp => (
-          <Box key={sp.id} sx={{
-            "@keyframes fadeInPost": { from: { opacity: 0, transform: "translateY(-6px)" }, to: { opacity: 1, transform: "translateY(0)" } },
-            animation: "fadeInPost 0.35s ease forwards",
-          }}>
-            <UserPost
-              {...postProps(sp.id)}
-              author="you" time="just now"
-              text={sp.caption || undefined}
-              passage={
-                <PassageCard
-                  chapter="ch. 3" timestamp={sp.timestampRange}
-                  quote={sp.excerpt}
-                  duration={fmtTime(sp.playedRatio)}
-                  playedRatio={0}
-                />
-              }
-            />
-          </Box>
-        ))}
 
         <StorybotPost
           {...postProps("storybot-opening")}
@@ -1166,11 +1305,13 @@ export default function Salon({ room, onBack }: Props) {
           {...postProps("mireille-1")}
           author="mireille_r" time="7:42am"
           text="It's the exhale before everything gets hard. Tolkien knew you needed to love the world before you could fear losing it."
+          onMemberSelect={onMemberSelect}
         />
 
         <UserPost
           {...postProps("jakek-1")}
           author="jakek" time="9:11am"
+          onMemberSelect={onMemberSelect}
           text="The silence before the elves sing completely stopped me."
           passage={
             <PassageCard
@@ -1191,6 +1332,7 @@ export default function Salon({ room, onBack }: Props) {
         <UserPost
           {...postProps("t-ashworth-1")}
           author="t_ashworth" time="10:33am"
+          onMemberSelect={onMemberSelect}
           text="Bilbo doesn't want to leave. For the first time he actually doesn't want to leave."
           passage={
             <PassageCard
@@ -1232,6 +1374,7 @@ export default function Salon({ room, onBack }: Props) {
           author="ppolanski" time="2:17pm"
           text="Asking StoryBot — if Tolkien was a devout Catholic, why is there no religion in Middle Earth?"
           directed
+          onMemberSelect={onMemberSelect}
         />
 
         <StorybotPost
@@ -1244,6 +1387,75 @@ export default function Salon({ room, onBack }: Props) {
           ]}
         />
 
+        {/* ── User chat & passage posts (appended newest-last) ─────────── */}
+        {[
+          ...chatPosts.map(cp => ({
+            id: cp.id,
+            ts: parseInt(cp.id.split("-")[1]),
+            node: (
+              <UserPost
+                {...postProps(cp.id)}
+                author="you" time="just now"
+                text={cp.text}
+                flash={cp.id === newPostId}
+                onMemberSelect={onMemberSelect}
+              />
+            ),
+          })),
+          ...sharedPosts.map(sp => ({
+            id: sp.id,
+            ts: parseInt(sp.id.split("-")[1]),
+            node: (
+              <UserPost
+                {...postProps(sp.id)}
+                author="you" time="just now"
+                text={sp.caption || undefined}
+                onMemberSelect={onMemberSelect}
+                passage={
+                  <PassageCard
+                    chapter="ch. 3" timestamp={sp.timestampRange}
+                    quote={sp.excerpt}
+                    duration={fmtTime(sp.playedRatio)}
+                    playedRatio={0}
+                  />
+                }
+              />
+            ),
+          })),
+        ].sort((a, b) => a.ts - b.ts).map(({ id, node }) => (
+          <Box key={id} sx={{
+            "@keyframes fadeInPost": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } },
+            animation: "fadeInPost 0.35s ease forwards",
+          }}>
+            {node}
+          </Box>
+        ))}
+
+        {/* ── Ask posts (directed questions + StoryBot answers) ────────── */}
+        {askPosts.map(ap => (
+          <Box
+            key={ap.id}
+            ref={(el: HTMLDivElement | null) => { askPostRefs.current[ap.id] = el; }}
+            sx={{
+              "@keyframes fadeInPost": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } },
+              animation: "fadeInPost 0.35s ease forwards",
+            }}
+          >
+            <UserPost
+              {...postProps(ap.id)}
+              author="you"
+              time="just now"
+              directed
+              text={ap.question}
+              onMemberSelect={onMemberSelect}
+              replies={ap.answered ? [{
+                type: "storybot",
+                text: "That's a great thread to pull on. Tolkien spent over 12 years building the mythology of Middle Earth before The Hobbit was published — which is why even a chapter like this one carries so much weight beneath the surface.",
+              }] : undefined}
+            />
+          </Box>
+        ))}
+
       </Box>
 
       {/* ── Compose bar ─────────────────────────────────────────────────── */}
@@ -1252,35 +1464,68 @@ export default function Salon({ room, onBack }: Props) {
         bgcolor: "#352a8c",
         borderTop: "1px solid rgba(106,96,191,0.4)",
         px: "15px", pt: "12px", pb: "20px",
-        display: showPassageSheet ? "none" : "flex", alignItems: "flex-start", gap: "8px",
+        display: showPassageSheet || showAskSheet ? "none" : "flex", alignItems: "flex-start", gap: "8px",
       }}>
-        {/* Auto-expanding textarea */}
-        <Box
-          component="textarea"
-          ref={composeRef}
-          placeholder="Add to the salon..."
-          value={composeText}
-          onChange={handleComposeChange}
-          rows={1}
-          sx={{
-            flex: 1,
-            bgcolor: "#0a005a",
-            border: "1px solid #6a60bf",
-            borderRadius: "16px",
-            minHeight: "33px",
-            px: "14px", py: "7px",
-            fontFamily: sans, fontSize: 14, letterSpacing: "-0.5px",
-            lineHeight: "19px",
-            color: "#e8e6fc",
-            outline: "none",
-            resize: "none",
-            overflow: "hidden",
-            boxSizing: "border-box",
-            display: "block",
-            "&::placeholder": { color: "#6a60bf" },
-            "&:focus": { border: "1px solid #9a90df" },
-          }}
-        />
+        {/* Auto-expanding textarea + send button */}
+        <Box sx={{ flex: 1, position: "relative" }}>
+          <Box
+            component="textarea"
+            ref={composeRef}
+            placeholder="Add to the salon..."
+            value={composeText}
+            onChange={handleComposeChange}
+            onKeyDown={(e: KeyboardEvent<HTMLTextAreaElement>) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleComposeSubmit();
+              }
+            }}
+            rows={1}
+            sx={{
+              width: "100%",
+              bgcolor: "#0a005a",
+              border: "1px solid #6a60bf",
+              borderRadius: "16px",
+              minHeight: "33px",
+              pl: "14px",
+              pr: composeText.trim() ? "38px" : "14px",
+              py: "7px",
+              fontFamily: sans, fontSize: 14, letterSpacing: "-0.5px",
+              lineHeight: "19px",
+              color: "#e8e6fc",
+              outline: "none",
+              resize: "none",
+              overflow: "hidden",
+              boxSizing: "border-box",
+              display: "block",
+              transition: "padding-right 0.15s ease",
+              "&::placeholder": { color: "#6a60bf" },
+              "&:focus": { border: "1px solid #9a90df" },
+            }}
+          />
+          {/* Send button — appears when text is present */}
+          <Box
+            onClick={handleComposeSubmit}
+            sx={{
+              position: "absolute",
+              right: "5px",
+              top: "4px",
+              width: 25, height: 25,
+              borderRadius: "50%",
+              bgcolor: "#6a60bf",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+              opacity: composeText.trim() ? 1 : 0,
+              pointerEvents: composeText.trim() ? "auto" : "none",
+              transform: composeText.trim() ? "scale(1)" : "scale(0.7)",
+              transition: "opacity 0.15s ease, transform 0.15s ease",
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.5 10.5V2.5M6.5 2.5L3 6M6.5 2.5L10 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Box>
+        </Box>
         {/* Quote button */}
         <Box
           onClick={e => { e.stopPropagation(); setShowPassageSheet(true); }}
@@ -1294,12 +1539,15 @@ export default function Salon({ room, onBack }: Props) {
           <Typography sx={{ fontFamily: sans, fontSize: 14, color: "#e8e6fc", lineHeight: 1 }}>❝</Typography>
         </Box>
         {/* Ask button */}
-        <Box sx={{
-          width: 30, height: 30, borderRadius: "50%", flexShrink: 0, mt: "1px",
-          bgcolor: "rgba(232,230,252,0.12)",
-          border: "1px solid rgba(232,230,252,0.25)",
-          display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
-        }}>
+        <Box
+          onClick={e => { e.stopPropagation(); setShowAskSheet(true); }}
+          sx={{
+            width: 30, height: 30, borderRadius: "50%", flexShrink: 0, mt: "1px",
+            bgcolor: "rgba(232,230,252,0.12)",
+            border: "1px solid rgba(232,230,252,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+          }}
+        >
           <Typography sx={{ fontFamily: sans, fontSize: 10, fontWeight: 500, color: "#e8e6fc", lineHeight: 1 }}>Ask</Typography>
         </Box>
       </Box>
@@ -1321,6 +1569,21 @@ export default function Salon({ room, onBack }: Props) {
         room={room}
         onClose={() => setShowPassageSheet(false)}
         onShare={handleShare}
+      />
+
+      {/* ── Ask sheet backdrop ──────────────────────────────────────────── */}
+      {showAskSheet && (
+        <Box
+          onClick={() => setShowAskSheet(false)}
+          sx={{ position: "absolute", inset: 0, bgcolor: "rgba(0,0,0,0.50)", zIndex: 59 }}
+        />
+      )}
+
+      {/* ── Ask sheet ───────────────────────────────────────────────────── */}
+      <AskSheet
+        visible={showAskSheet}
+        onClose={() => setShowAskSheet(false)}
+        onAsk={handleAsk}
       />
 
     </Box>
