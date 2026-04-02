@@ -860,9 +860,9 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
           }}>
             <Box sx={{
               width: 36, height: 36, borderRadius: "50%", m: "2px",
-              backgroundImage: `url(${paperTexture})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundImage: `url(${paperTexture}), linear-gradient(135deg, #eee9dc 0%, #d3e8e2 100%)`,
+              backgroundSize: "cover, cover",
+              backgroundBlendMode: "multiply",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <Typography sx={{ fontFamily: serif, fontSize: 14, color: c.navy, fontWeight: 700 }}>L</Typography>
