@@ -15,6 +15,7 @@ import catLogo1 from "./assets/cat-logo-1.svg";
 import catLogo2 from "./assets/cat-logo-2.svg";
 // Nav icons (inline SVG components for controllable color)
 import { RoomsIcon, DiscoverIcon, LibraryIcon, ProfileIcon } from "./NavIcons";
+import paperTexture from "./assets/paper-texture.png";
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 const serif = "'Besley', serif";
@@ -859,7 +860,9 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
           }}>
             <Box sx={{
               width: 36, height: 36, borderRadius: "50%", m: "2px",
-              background: "linear-gradient(135deg, #eee9dc 0%, #d3e8e2 100%)",
+              backgroundImage: `url(${paperTexture})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <Typography sx={{ fontFamily: serif, fontSize: 14, color: c.navy, fontWeight: 700 }}>L</Typography>

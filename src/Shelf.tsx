@@ -23,6 +23,7 @@ import coverAlchemist    from "./assets/the-alchemist.jpg";
 import coverEducated     from "./assets/educated.jpg";
 import coverSapiens      from "./assets/sapiens.jpg";
 import coverNightCircus  from "./assets/the-night-circus.jpg";
+import paperTexture from "./assets/paper-texture.png";
 
 const sans = "'Plus Jakarta Sans', sans-serif";
 const serif = "'Besley', serif";
@@ -216,8 +217,8 @@ export default function Shelf({ rooms, onRoomSelect, onSalonOpen, onNavigate }: 
           </Box>
           {/* Profile avatar */}
           <Box sx={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg, #e2a9c9 0%, #d3e8e2 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Box sx={{ width: 36, height: 36, borderRadius: "50%", m: "2px", background: "linear-gradient(135deg, #eee9dc 0%, #d3e8e2 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Typography sx={{ fontFamily: serif, fontSize: 14, lineHeight: 1, color: c.navy }}>L</Typography>
+            <Box sx={{ width: 36, height: 36, borderRadius: "50%", m: "2px", backgroundImage: `url(${paperTexture})`, backgroundSize: "cover", backgroundPosition: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Typography sx={{ fontFamily: serif, fontSize: 14, fontWeight: 700, lineHeight: 1, color: c.navy }}>L</Typography>
             </Box>
           </Box>
         </Box>

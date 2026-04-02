@@ -88,6 +88,7 @@ import windDown3 from "./assets/wind-down-3.jpg";
 import windDown4 from "./assets/wind-down-4.jpg";
 import windDown5 from "./assets/wind-down-5.jpg";
 import windDown6 from "./assets/wind-down-6.jpg";
+import paperTexture from "./assets/paper-texture.png";
 
 // Design tokens
 const c = {
@@ -533,13 +534,15 @@ export default function App() {
                     width: "100%",
                     height: "100%",
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgb(238,233,220) 0%, rgb(211,232,226) 100%)",
+                    backgroundImage: `url(${paperTexture})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Typography sx={{ fontFamily: serif, fontSize: 14, lineHeight: 1, color: c.navy }}>
+                  <Typography sx={{ fontFamily: serif, fontSize: 14, fontWeight: 700, lineHeight: 1, color: c.navy }}>
                     L
                   </Typography>
                 </Box>

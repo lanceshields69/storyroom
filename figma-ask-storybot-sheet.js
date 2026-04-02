@@ -9,9 +9,9 @@
   await figma.loadFontAsync({ family:"Plus Jakarta Sans", style:"Italic" });
 
   // Paper texture image (from design system node I15:606;171:4446)
-  const paperImg = await figma.createImageAsync(
-    "http://localhost:3845/assets/37ea7b34ac3b0cc4dfa8aaabb3675afe16f7339b.png"
-  );
+  const _paperRes = await fetch("http://localhost:3845/assets/37ea7b34ac3b0cc4dfa8aaabb3675afe16f7339b.png");
+  const _paperBuf = await _paperRes.arrayBuffer();
+  const paperImg = figma.createImage(new Uint8Array(_paperBuf));
 
   function solid(hex, a) {
     const r=parseInt(hex.slice(1,3),16)/255,
