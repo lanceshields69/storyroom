@@ -855,7 +855,8 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
           {/* Profile avatar */}
           <Box sx={{
             width: 40, height: 40, borderRadius: "50%",
-            background: "linear-gradient(135deg, #e2a9c9 0%, #d3e8e2 100%)",
+            background: "linear-gradient(135deg, rgb(226,169,201) 0%, rgb(139,169,198) 100%)",
+            opacity: 0.9,
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <Box sx={{
