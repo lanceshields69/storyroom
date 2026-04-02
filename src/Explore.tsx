@@ -763,6 +763,7 @@ type ExploreProps = {
 
 export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelect }: ExploreProps) {
   const [activeTab, setActiveTab] = useState("For you");
+  const [catBounceKey, setCatBounceKey] = useState(0);
   const filterTabsRef = useDragScroll();
 
   const heroRooms = rooms.slice(0, 3);
@@ -777,7 +778,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
       <Box sx={{ flexShrink: 0, px: "24px", pt: "15px", pb: "10px" }}>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {/* Logo: animated cat + wordmark */}
-          <Box onClick={() => onNavigate?.("rooms")} sx={{ position: "relative", width: 102, height: 43, cursor: "pointer" }}>
+          <Box onClick={() => onNavigate?.("rooms")} onMouseEnter={() => setCatBounceKey(k => k + 1)} sx={{ position: "relative", width: 102, height: 43, cursor: "pointer" }}>
             {/* Cat 1 — slides in from left then fades out */}
             <Box sx={{
               position: "absolute", top: 0, left: 54, width: 43, height: 28, opacity: 0,
@@ -825,7 +826,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
               animation: "cat2-opacity 2.8s linear forwards",
               animationDelay: "0.5s",
             }}>
-              <Box sx={{
+              <Box key={catBounceKey} sx={{
                 "@keyframes cat2-wobble": {
                   "0%":   { transform: "translateY(0) rotate(0deg)" },
                   "35%":  { transform: "translateY(-6px) rotate(5deg)" },
@@ -835,7 +836,7 @@ export default function Explore({ rooms, onRoomSelect, onNavigate, onMemberSelec
                   "100%": { transform: "translateY(0) rotate(0deg)" },
                 },
                 animation: "cat2-wobble 0.55s ease forwards",
-                animationDelay: "3.5s",
+                animationDelay: catBounceKey === 0 ? "3.5s" : "0s",
               }}>
                 <Box component="img" src={catLogo2} alt="" sx={{ width: 54, height: 35, display: "block" }} />
               </Box>

@@ -227,6 +227,7 @@ export default function App() {
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+  const [catBounceKey, setCatBounceKey] = useState(0);
   const lastScrollRef = useRef(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -409,7 +410,7 @@ export default function App() {
             <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: "8px" }}>
 
               {/* Logo: wordmark with animated cat */}
-              <Box sx={{ position: "relative", width: 102, height: 43 }}>
+              <Box onMouseEnter={() => setCatBounceKey(k => k + 1)} sx={{ position: "relative", width: 102, height: 43, cursor: "pointer" }}>
 
                 {/* Cat 1 — fades in at left, pauses, slides right (ease-in), pauses, fades out */}
                 <Box sx={{
@@ -476,8 +477,8 @@ export default function App() {
                   animation: "cat2-opacity 2.8s linear forwards",
                   animationDelay: "0.5s",
                 }}>
-                  {/* Wobble wrapper — single bob shortly after fade-in */}
-                  <Box sx={{
+                  {/* Wobble wrapper — single bob shortly after fade-in; replays on logo hover */}
+                  <Box key={catBounceKey} sx={{
                     "@keyframes cat2-wobble": {
                       "0%":   { transform: "translateY(0) rotate(0deg)" },
                       "35%":  { transform: "translateY(-6px) rotate(5deg)" },
@@ -487,7 +488,7 @@ export default function App() {
                       "100%": { transform: "translateY(0) rotate(0deg)" },
                     },
                     animation: "cat2-wobble 0.55s ease forwards",
-                    animationDelay: "3.5s",
+                    animationDelay: catBounceKey === 0 ? "3.5s" : "0s",
                   }}>
                     <Box component="img" src={catLogo2} alt=""
                       sx={{ width: 54, height: 35, display: "block" }}
