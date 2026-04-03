@@ -204,40 +204,59 @@ function SplashOverlay({ phase, videoSrc }: { phase: "splash" | "fade"; videoSrc
         position: "fixed",
         inset: 0,
         zIndex: 10000,
-        bgcolor: "#ffffff",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-start",
+        minHeight: "100vh",
+        py: { xs: 0, sm: 4 },
+        bgcolor: { xs: "#ffffff", sm: "#e8e8ec" },
         opacity: phase === "fade" ? 0 : 1,
         transition: phase === "fade" ? `opacity ${SPLASH_FADE_MS}ms ease` : "none",
         pointerEvents: phase === "splash" ? "auto" : "none",
       }}
     >
-      {/* 270×184 source, 1px trim all sides → 268×182; 90px from left, vertical center −20px */}
+      {/* Same phone shell as Rooms / Explore (393×874, radius, shadow on sm+) */}
       <Box
         sx={{
-          position: "absolute",
-          left: 90,
-          top: "calc(50% - 20px)",
-          transform: "translateY(-50%)",
-          width: 268,
-          height: 182,
+          width: { xs: "100%", sm: 393 },
+          height: { xs: "100dvh", sm: 874 },
+          position: "relative",
+          flexShrink: 0,
+          bgcolor: "#ffffff",
+          borderRadius: { xs: 0, sm: "44px" },
+          boxShadow: { xs: "none", sm: "0 30px 80px rgba(0,0,0,0.45)" },
           overflow: "hidden",
         }}
       >
+        {/* 270×184 source, 1px trim all sides → 268×182; 90px from frame left, vertical center −20px */}
         <Box
-          component="video"
-          src={videoSrc}
-          autoPlay
-          muted
-          playsInline
           sx={{
             position: "absolute",
-            left: -1,
-            top: -1,
-            width: 270,
-            height: 184,
-            objectFit: "fill",
-            display: "block",
+            left: 90,
+            top: "calc(50% - 20px)",
+            transform: "translateY(-50%)",
+            width: 268,
+            height: 182,
+            overflow: "hidden",
           }}
-        />
+        >
+          <Box
+            component="video"
+            src={videoSrc}
+            autoPlay
+            muted
+            playsInline
+            sx={{
+              position: "absolute",
+              left: -1,
+              top: -1,
+              width: 270,
+              height: 184,
+              objectFit: "fill",
+              display: "block",
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   );
