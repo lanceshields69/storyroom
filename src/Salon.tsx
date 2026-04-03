@@ -284,7 +284,44 @@ const UserAvatar = ({ name, size = 28, onClick }: { name: string; size?: number;
 };
 
 // ── Reply types ─────────────────────────────────────────────────────────────
-type Reply = { type: "user" | "storybot"; author?: string; text: string };
+type Reply = { type: "user" | "storybot" | "thinking"; author?: string; text?: string };
+
+const ASK_THINK_MS = 2000;
+/** Three dots, sequential pulse; 0.667s × 3 iterations = 2s; stagger 2s/9 per dot (Figma AI thinking) */
+const StorybotThinkingDots = () => (
+  <Box
+    aria-busy
+    aria-label="StoryBot is thinking"
+    sx={{
+      "@keyframes storybotThinkingWave": {
+        "0%":    { transform: "scale(1)",   opacity: 1 },
+        "16.7%": { transform: "scale(1.5)", opacity: 0.8 },
+        "33.3%": { transform: "scale(1)",   opacity: 1 },
+        "100%":  { transform: "scale(1)",   opacity: 1 },
+      },
+      display: "flex",
+      alignItems: "center",
+      gap: "7px",
+      height: 14,
+      mt: "4px",
+    }}
+  >
+    {[0, 1, 2].map((i) => (
+      <Box
+        key={i}
+        sx={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          bgcolor: "rgba(211,232,226,0.65)",
+          flexShrink: 0,
+          animation: "storybotThinkingWave 0.666666s ease-in-out 3 forwards",
+          animationDelay: `${(i * ASK_THINK_MS) / 9 / 1000}s`,
+        }}
+      />
+    ))}
+  </Box>
+);
 
 type ReplyItemProps = {
   reply: Reply;
@@ -303,6 +340,25 @@ const ReplyItem = ({ reply, messageId, onLongPress, userReaction, onMemberSelect
   const footer = (
     <MessageFooter messageId={messageId} userReaction={userReaction} showActions={false} />
   );
+
+  if (reply.type === "thinking") {
+    return (
+      <Box sx={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+        <StorybotIcon size={16} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap" }}>
+            <Typography sx={{ fontFamily: sans, fontSize: 11, fontWeight: 600, color: c.sage }}>
+              StoryBot
+            </Typography>
+            <Typography sx={{ fontFamily: sans, fontSize: 10, color: "rgba(238,233,220,0.5)" }}>
+              just now
+            </Typography>
+          </Box>
+          <StorybotThinkingDots />
+        </Box>
+      </Box>
+    );
+  }
 
   if (reply.type === "storybot") {
     return (
@@ -1229,7 +1285,7 @@ export default function Salon({ room, onBack, onMemberSelect }: Props) {
       setTimeout(() => {
         askPostRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "end" });
       }, 100);
-    }, 900);
+    }, ASK_THINK_MS);
   }, []);
 
   const postProps = (id: string) => ({
@@ -1464,7 +1520,7 @@ export default function Salon({ room, onBack, onMemberSelect }: Props) {
               replies={ap.answered ? [{
                 type: "storybot",
                 text: "That's a great thread to pull on. Tolkien spent over 12 years building the mythology of Middle Earth before The Hobbit was published — which is why even a chapter like this one carries so much weight beneath the surface.",
-              }] : undefined}
+              }] : [{ type: "thinking" }]}
             />
           </Box>
         ))}
