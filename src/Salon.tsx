@@ -304,6 +304,7 @@ const StorybotThinkingDots = () => (
       gap: "7px",
       height: 14,
       mt: "4px",
+      mb: "30px",
     }}
   >
     {[0, 1, 2].map((i) => (
