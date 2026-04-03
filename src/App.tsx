@@ -89,6 +89,7 @@ import windDown4 from "./assets/wind-down-4.jpg";
 import windDown5 from "./assets/wind-down-5.jpg";
 import windDown6 from "./assets/wind-down-6.jpg";
 import paperTexture from "./assets/paper-texture.png";
+import splashAnimationUrl from "./assets/splash-animation.mov?url";
 
 // Design tokens
 const c = {
@@ -193,6 +194,55 @@ const NAV_ITEMS = [
   { label: "Profile", Icon: ProfileIcon,  key: "profile" },
 ];
 
+const SPLASH_VIDEO_MS = 7000;
+const SPLASH_FADE_MS = 1000;
+
+function SplashOverlay({ phase, videoSrc }: { phase: "splash" | "fade"; videoSrc: string }) {
+  return (
+    <Box
+      sx={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 10000,
+        bgcolor: "#ffffff",
+        opacity: phase === "fade" ? 0 : 1,
+        transition: phase === "fade" ? `opacity ${SPLASH_FADE_MS}ms ease` : "none",
+        pointerEvents: phase === "splash" ? "auto" : "none",
+      }}
+    >
+      {/* 270×184 source, 1px trim all sides → 268×182; 90px from left, vertical center −20px */}
+      <Box
+        sx={{
+          position: "absolute",
+          left: 90,
+          top: "calc(50% - 20px)",
+          transform: "translateY(-50%)",
+          width: 268,
+          height: 182,
+          overflow: "hidden",
+        }}
+      >
+        <Box
+          component="video"
+          src={videoSrc}
+          autoPlay
+          muted
+          playsInline
+          sx={{
+            position: "absolute",
+            left: -1,
+            top: -1,
+            width: 270,
+            height: 184,
+            objectFit: "fill",
+            display: "block",
+          }}
+        />
+      </Box>
+    </Box>
+  );
+}
+
 const theme = createTheme({
   palette: { primary: { main: c.navy } },
   typography: { fontFamily: "'Plus Jakarta Sans', sans-serif" },
@@ -228,8 +278,18 @@ export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
   const [catBounceKey, setCatBounceKey] = useState(0);
+  const [introPhase, setIntroPhase] = useState<"splash" | "fade" | "done">("splash");
   const lastScrollRef = useRef(0);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    const t1 = window.setTimeout(() => setIntroPhase("fade"), SPLASH_VIDEO_MS);
+    const t2 = window.setTimeout(() => setIntroPhase("done"), SPLASH_VIDEO_MS + SPLASH_FADE_MS);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, []);
 
   // Simulate content load
   useEffect(() => {
@@ -330,6 +390,14 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+
+      <Box
+        sx={{
+          minHeight: "100vh",
+          opacity: introPhase === "splash" ? 0 : 1,
+          transition: introPhase !== "splash" ? `opacity ${SPLASH_FADE_MS}ms ease` : "none",
+        }}
+      >
 
       {currentMember !== null && (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "100vh", py: { xs: 0, sm: 4 } }}>
@@ -793,6 +861,12 @@ export default function App() {
           </Box>
         </Box>
       </Box>
+
+      </Box>
+
+      {introPhase !== "done" && (
+        <SplashOverlay phase={introPhase === "splash" ? "splash" : "fade"} videoSrc={splashAnimationUrl} />
+      )}
     </ThemeProvider>
   );
 }
