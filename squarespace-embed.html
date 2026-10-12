@@ -30,7 +30,7 @@
   .sr-demo {
     position: relative;
     width: 100%;
-    max-width: 380px;            /* raise for a larger player */
+    max-width: 472px;            /* 472px wide = 840px tall at 607:1080 */
     margin: 0 auto;              /* remove to left-align */
     aspect-ratio: 607 / 1080;    /* matches the video */
     background: #000;
@@ -52,16 +52,18 @@
   }
 
   /* Big center play, shown when paused */
-  .sr-big {
+  .sr-demo .sr-big {
     position: absolute; top: 50%; left: 50%;
-    width: 72px; height: 72px; margin: -36px 0 0 -36px;
+    width: 72px; height: 72px; margin: 0;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
     background: rgba(20, 10, 100, .75);
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
     transition: opacity .2s, transform .2s;
   }
-  .sr-big:hover { transform: scale(1.06); }
+  .sr-demo .sr-big:hover { transform: translate(-50%, -50%) scale(1.06); }
+  .sr-big svg { margin-left: 3px; }  /* optical centering of the triangle */
   .sr-demo.is-playing .sr-big { opacity: 0; pointer-events: none; }
 
   /* Bottom control bar */
