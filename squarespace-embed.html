@@ -1,0 +1,163 @@
+<div class="sr-demo" id="srDemo">
+  <video
+    id="srVideo"
+    playsinline
+    preload="metadata"
+    poster="https://cdn.jsdelivr.net/gh/lanceshields69/storyroom@main/demo-video/storyroom1.jpg"
+    src="https://cdn.jsdelivr.net/gh/lanceshields69/storyroom@main/demo-video/Storyroom-demo-lite.mp4">
+  </video>
+
+  <button class="sr-big" id="srBig" aria-label="Play video">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+
+  <div class="sr-bar">
+    <button class="sr-btn" id="srPlay" aria-label="Play">
+      <svg class="i-play" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+    </button>
+
+    <input class="sr-scrub" id="srScrub" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek">
+
+    <button class="sr-btn" id="srMute" aria-label="Mute">
+      <svg class="i-sound" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+      <svg class="i-muted" viewBox="0 0 24 24" width="20" height="20" fill="currentColor" hidden><path d="M16.5 12A4.5 4.5 0 0 0 14 8v2.2l2.5 2.5V12zM19 12a7 7 0 0 1-.9 3.4l1.5 1.5A9 9 0 0 0 21 12a9 9 0 0 0-7-8.8v2.1A7 7 0 0 1 19 12zM4.3 3 3 4.3 7.7 9H3v6h4l5 5v-6.7l4.3 4.3c-.7.5-1.4.9-2.3 1.1v2.1a9 9 0 0 0 3.6-1.8l2.1 2.1 1.3-1.3L4.3 3zM12 4 9.9 6.1 12 8.2V4z"/></svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .sr-demo {
+    position: relative;
+    width: 100%;
+    max-width: 380px;            /* raise for a larger player */
+    margin: 0 auto;              /* remove to left-align */
+    aspect-ratio: 607 / 1080;    /* matches the video */
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sr-demo video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+  }
+  .sr-demo [hidden] { display: none !important; }
+  .sr-demo button {
+    border: 0; padding: 0; margin: 0; background: none; color: #fff; cursor: pointer;
+    font: inherit; line-height: 0;
+  }
+
+  /* Big center play, shown when paused */
+  .sr-big {
+    position: absolute; top: 50%; left: 50%;
+    width: 72px; height: 72px; margin: -36px 0 0 -36px;
+    border-radius: 50%;
+    background: rgba(20, 10, 100, .75);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .2s, transform .2s;
+  }
+  .sr-big:hover { transform: scale(1.06); }
+  .sr-demo.is-playing .sr-big { opacity: 0; pointer-events: none; }
+
+  /* Bottom control bar */
+  .sr-bar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; gap: 10px;
+    padding: 28px 12px 10px;
+    background: linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0));
+  }
+  .sr-btn {
+    width: 32px; height: 32px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+  }
+  .sr-btn:hover { background: rgba(255,255,255,.18); }
+  .sr-btn:focus-visible, .sr-big:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  /* Scrubber */
+  .sr-scrub {
+    -webkit-appearance: none; appearance: none;
+    flex: 1; min-width: 0; height: 18px; margin: 0;
+    background: transparent; cursor: pointer;
+    --p: 0%;
+  }
+  .sr-scrub::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 2px;
+    background: linear-gradient(to right, #fff var(--p), rgba(255,255,255,.35) var(--p));
+  }
+  .sr-scrub::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.35); }
+  .sr-scrub::-moz-range-progress { height: 4px; border-radius: 2px; background: #fff; }
+  .sr-scrub::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4px;
+    border-radius: 50%; background: #fff; border: 0;
+  }
+  .sr-scrub::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 0; }
+</style>
+
+<script>
+(function () {
+  var root = document.getElementById('srDemo');
+  var v = document.getElementById('srVideo');
+  var big = document.getElementById('srBig');
+  var play = document.getElementById('srPlay');
+  var mute = document.getElementById('srMute');
+  var scrub = document.getElementById('srScrub');
+  var dragging = false;
+
+  v.muted = false;   // sound on by default
+  v.volume = 1;
+
+  function show(btn, a, b, first) {
+    btn.querySelector(a).hidden = !first;
+    btn.querySelector(b).hidden = first;
+  }
+  function sync() {
+    var playing = !v.paused && !v.ended;
+    root.classList.toggle('is-playing', playing);
+    show(play, '.i-play', '.i-pause', !playing);
+    play.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    big.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
+    show(mute, '.i-sound', '.i-muted', !v.muted);
+    mute.setAttribute('aria-label', v.muted ? 'Unmute' : 'Mute');
+  }
+  function toggle() {
+    if (v.paused || v.ended) {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { sync(); });
+    } else {
+      v.pause();
+    }
+  }
+
+  big.addEventListener('click', toggle);
+  play.addEventListener('click', toggle);
+  v.addEventListener('click', toggle);
+  mute.addEventListener('click', function () { v.muted = !v.muted; sync(); });
+
+  ['play', 'pause', 'ended', 'volumechange'].forEach(function (e) { v.addEventListener(e, sync); });
+
+  v.addEventListener('timeupdate', function () {
+    if (dragging || !v.duration) return;
+    var pct = v.currentTime / v.duration;
+    scrub.value = Math.round(pct * 1000);
+    scrub.style.setProperty('--p', (pct * 100) + '%');
+  });
+  scrub.addEventListener('input', function () {
+    dragging = true;
+    var pct = scrub.value / 1000;
+    scrub.style.setProperty('--p', (pct * 100) + '%');
+    if (v.duration) v.currentTime = pct * v.duration;
+  });
+  scrub.addEventListener('change', function () { dragging = false; });
+  ['pointerup', 'touchend', 'keyup'].forEach(function (e) {
+    scrub.addEventListener(e, function () { dragging = false; });
+  });
+
+  sync();
+})();
+</script>
