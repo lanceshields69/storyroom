@@ -8,7 +8,7 @@
   </video>
 
   <button class="sr-big" id="srBig" aria-label="Play video">
-    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    <svg viewBox="0 0 24 24" width="44" height="44" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
   </button>
 
   <div class="sr-bar">
@@ -54,16 +54,16 @@
   /* Big center play, shown when paused */
   .sr-demo .sr-big {
     position: absolute; top: 50%; left: 50%;
-    width: 72px; height: 72px; margin: 0;
+    width: 96px; height: 96px; margin: 0;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    background: rgba(20, 10, 100, .75);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    background: rgba(30, 24, 22, .6);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
     display: flex; align-items: center; justify-content: center;
     transition: opacity .2s, transform .2s;
   }
   .sr-demo .sr-big:hover { transform: translate(-50%, -50%) scale(1.06); }
-  .sr-big svg { margin-left: 3px; }  /* optical centering of the triangle */
+  .sr-big svg { margin-left: 4px; }  /* optical centering of the triangle */
   .sr-demo.is-playing .sr-big { opacity: 0; pointer-events: none; }
 
   /* Bottom control bar */
